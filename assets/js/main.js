@@ -2,10 +2,14 @@ var Settings = {
     "SideBar":{
         "FolderSize":{
             "x": 300,
-            "y": 50
+            "y": 50,
+            "offset":10
         },
         "NestedFolderSize":{
-            "y":10
+            "y":4,
+            "offset":20,
+            "offset_y":20,
+            "VisualHight":40
         },
         "current_nested_object":0
         
@@ -64,23 +68,41 @@ function traverseObjectDepthFirst(obj, depth = 0) {
         let value = obj[key];
         let type = typeof value;
 
-        //iterate the current nested object size 
-        Settings.SideBar.current_nested_object ++; 
         // Check if the current item is a key or a value
         let isKey = type === "object" &&!Array.isArray(value);
         const container = document.getElementById("SideBar");
         const current_key_name = key;
         const val = document.createElement("div");
         val.style.position = "absolute";
-        val.style.left = depth * 10;
-        val.style.top = Settings.SideBar.current_nested_object * Settings.SideBar.NestedFolderSize.y * 10;
+        val.style.left = depth * 10;        
         val.className = "text";
         val.style.color = "white";
+        val.style.width = "100%";
+        val.style.height = Settings.SideBar.FolderSize.y;
 
         if(isKey){
             //it is a key     
-            val.innerHTML = current_key_name;    
-                        
+            val.style.top = Settings.SideBar.current_nested_object * Settings.SideBar.NestedFolderSize.y;
+            //val.innerHTML = current_key_name;
+            const img = document.createElement("img");
+            img.src = "./assets/img/folder.svg";
+            img.style.position = "absolute";
+            img.style.top = "50%";
+            img.style.left = 0;
+            img.style.transform = "translate(0,-50%)";
+            img.style.height = "100%";
+            img.style.width = "30px";
+
+            const text = document.createElement("div");
+            text.style.position = "absolute";
+            text.style.left = "20px";
+            text.style.top = "50%";
+            text.style.transform = "translate(0,-50%)";
+            text.className = "text";
+            text.innerHTML = current_key_name; 
+
+            val.appendChild(img);
+            val.appendChild(text);                        
         }
         else{
             //is value
@@ -89,21 +111,21 @@ function traverseObjectDepthFirst(obj, depth = 0) {
                 const current_val = value[pointer];
                 const val2 = document.createElement("div");
                 val2.style.position  ="absolute";
-                val2.style.left = depth * 10;
+                val2.style.left = depth * 50;
                 val2.style.color = "white";
                 val2.style.width = "100%";
                 val2.className = "text";
-                val2.innerHTML = current_val;
-                val2.style.top = Settings.SideBar.current_nested_object * Settings.SideBar.NestedFolderSize.y;
-                val2.style.height = Settings.SideBar.NestedFolderSize.y; 
+                val2.innerHTML = truncateString(current_val, 30);
+                val2.style.top = (Settings.SideBar.current_nested_object * Settings.SideBar.NestedFolderSize.y) + Settings.SideBar.NestedFolderSize.offset;
+                val2.style.height = Settings.SideBar.NestedFolderSize.VisualHight; 
                 val2.style.zIndex = 999999;
+                Settings.SideBar.current_nested_object = Settings.SideBar.current_nested_object + 10;
                 val.appendChild(val2);
             }
-
-
-
         }
         container.appendChild(val);
+        //iterate the current nested object size 
+        Settings.SideBar.current_nested_object ++; 
         if (isKey) {
             traverseObjectDepthFirst(value, depth + 1);
         }
