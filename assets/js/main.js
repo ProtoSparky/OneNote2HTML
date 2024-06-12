@@ -7,11 +7,14 @@ var Settings = {
         },
         "NestedFolderSize":{
             "y":4,
-            "offset":20,
-            "offset_y":20,
+            "offset":35,
             "VisualHight":40
         },
-        "current_nested_object":0
+        "size":{
+            "w":300
+        },
+        "current_nested_object":0,
+        "prev_lnk":null
         
     }
 }
@@ -32,10 +35,20 @@ function init(){
     SideBar.style.top = "0px";
     SideBar.style.position = "absolute"; 
     SideBar.style.height = "100%";
-    SideBar.style.width = "300px";
+    SideBar.style.width = Settings.SideBar.size.w;
     SideBar.style.backgroundColor = AccessCSSVar("--col_bg_lighter");
     Root.appendChild(SideBar);
     document.body.style.backgroundColor = AccessCSSVar("--col_bg_content");
+
+
+    const Viewer = document.createElement("iframe");
+    Viewer.id = "Viewer";
+    Viewer.style.left = Settings.SideBar.size.w;
+    Viewer.style.position = "absolute";
+    Viewer.style.top = 0;
+    Viewer.style.width = window.innerWidth - Settings.SideBar.size.w - 30;
+    Viewer.style.height = window.outerHeight;
+    Root.appendChild(Viewer);
 
     ShowRoot(FileIndex);    
 }
@@ -57,13 +70,14 @@ function Back(){
 function Tree(FolderName){
     //we iterate trough all folders
     const current_selected_folder = FileIndex[FolderName];
+    Settings.SideBar.prev_lnk  = FolderName; 
 
     //visualizeJSON(current_selected_folder,"SideBar");
     //extend the ui for the display size
     traverseObjectDepthFirst(current_selected_folder)
 }
 
-function traverseObjectDepthFirst(obj, depth = 0) {
+function traverseObjectDepthFirst(obj, depth = 0, path = []) {
     for (let key in obj) {
         let value = obj[key];
         let type = typeof value;
@@ -79,6 +93,7 @@ function traverseObjectDepthFirst(obj, depth = 0) {
         val.style.color = "white";
         val.style.width = "100%";
         val.style.height = Settings.SideBar.FolderSize.y;
+        let newPath = path.concat(key);
 
         if(isKey){
             //it is a key     
@@ -118,8 +133,17 @@ function traverseObjectDepthFirst(obj, depth = 0) {
                 val2.innerHTML = truncateString(current_val, 30);
                 val2.style.top = (Settings.SideBar.current_nested_object * Settings.SideBar.NestedFolderSize.y) + Settings.SideBar.NestedFolderSize.offset;
                 val2.style.height = Settings.SideBar.NestedFolderSize.VisualHight; 
-                val2.style.zIndex = 999999;
                 Settings.SideBar.current_nested_object = Settings.SideBar.current_nested_object + 10;
+
+                //create a valid link
+                link = "./exports/"+Settings.SideBar.prev_lnk + "/"; 
+                for(current_link_pointer = 0; current_link_pointer < path.length; current_link_pointer ++){
+                    link = link + path[current_link_pointer] + "/";
+                }
+
+                val2.addEventListener("click",function(){
+                    SpawnIframe(link + current_val);
+                })
                 val.appendChild(val2);
             }
         }
@@ -127,46 +151,17 @@ function traverseObjectDepthFirst(obj, depth = 0) {
         //iterate the current nested object size 
         Settings.SideBar.current_nested_object ++; 
         if (isKey) {
-            traverseObjectDepthFirst(value, depth + 1);
+            traverseObjectDepthFirst(value, depth + 1, newPath);
         }
     }
 }
 
-function visualizeJSON(jsonObj, containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
 
-    // Temporary variable for custom JavaScript
-    let customJS = '';
-
-    // Recursive function to traverse the JSON object and create nested divs
-    function renderJSON(obj, indentLevel = 0) {
-        let output = '';
-        for (const key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                const value = typeof obj[key] === 'object' && obj[key]!== null? renderJSON(obj[key], indentLevel + 1) : obj[key];
-
-                // Check if the current item is an object (directory)
-                if (typeof value === 'object' && value!== null) {
-                    // Append custom JS for directories here if needed
-                    customJS += `/* Custom JS for directory ${key} */`;
-                } else if (Array.isArray(value)) {
-                    // Append custom JS for arrays here if needed
-                    customJS += `/* Custom JS for array ${key} */`;
-                }
-
-                // Adjust the output based on whether the current item is an object or an array
-                output += `<div style="padding-left: ${indentLevel * 20}px;">${key}: <span>${value}</span></div>`;
-            }
-        }
-        return output;
-    }
-
-    // Insert custom JavaScript before rendering the JSON structure
-    container.innerHTML = `
-        ${customJS}
-        ${renderJSON(jsonObj)}
-    `;
+function SpawnIframe(Link){
+    console.log(Link);
+    const Viewer = document.getElementById("Viewer");
+    Viewer.style.backgroundColor = "white";
+    Viewer.src = Link;
 }
 
 function ShowRoot(FileIndex){
