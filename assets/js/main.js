@@ -52,21 +52,45 @@ function Tree(FolderName){
     //we iterate trough all folders
     const current_selected_folder = FileIndex[FolderName];
 
-    RecursiveRun(current_selected_folder);
+    visualizeJSON(current_selected_folder,"SideBar");
 }
 
-function RecursiveRun(obj) {
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) { // Check if the property belongs to the object itself
-        if (typeof obj[key] === 'object' && obj[key]!== null) {
-            RecursiveRun(obj[key]); // Recursive call for nested objects
-        } 
-        else {
-          console.log(`Key: ${key}, Value: ${obj[key]}`); // Process the value here
+function visualizeJSON(jsonObj, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    // Temporary variable for custom JavaScript
+    let customJS = '';
+
+    // Recursive function to traverse the JSON object and create nested divs
+    function renderJSON(obj, indentLevel = 0) {
+        let output = '';
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                const value = typeof obj[key] === 'object' && obj[key]!== null? renderJSON(obj[key], indentLevel + 1) : obj[key];
+
+                // Check if the current item is an object (directory)
+                if (typeof value === 'object' && value!== null) {
+                    // Append custom JS for directories here if needed
+                    customJS += `/* Custom JS for directory ${key} */`;
+                } else if (Array.isArray(value)) {
+                    // Append custom JS for arrays here if needed
+                    customJS += `/* Custom JS for array ${key} */`;
+                }
+
+                // Adjust the output based on whether the current item is an object or an array
+                output += `<div style="padding-left: ${indentLevel * 20}px;">${key}: <span>${value}</span></div>`;
+            }
         }
-      }
+        return output;
     }
-  }
+
+    // Insert custom JavaScript before rendering the JSON structure
+    container.innerHTML = `
+        ${customJS}
+        ${renderJSON(jsonObj)}
+    `;
+}
 
 function ShowRoot(FileIndex){
     //we crawl the FileIndex and create the root folders
@@ -102,4 +126,7 @@ function ShowRoot(FileIndex){
 
         
     }
+}
+function ApplyStyle(){
+    
 }
