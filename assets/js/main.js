@@ -144,6 +144,7 @@ function traverseObjectDepthFirst(obj, depth = 0, path = []) {
                 val2.addEventListener("click",function(){
                     SpawnIframe(link + current_val);
                 })
+                val.style.cursor = "pointer";
                 val.appendChild(val2);
             }
         }
