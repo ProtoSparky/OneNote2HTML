@@ -5,8 +5,9 @@ var Settings = {
             "y": 50
         },
         "NestedFolderSize":{
-            
-        }
+            "y":10
+        },
+        "current_nested_object":0
         
     }
 }
@@ -30,6 +31,7 @@ function init(){
     SideBar.style.width = "300px";
     SideBar.style.backgroundColor = AccessCSSVar("--col_bg_lighter");
     Root.appendChild(SideBar);
+    document.body.style.backgroundColor = AccessCSSVar("--col_bg_content");
 
     ShowRoot(FileIndex);    
 }
@@ -52,7 +54,60 @@ function Tree(FolderName){
     //we iterate trough all folders
     const current_selected_folder = FileIndex[FolderName];
 
-    visualizeJSON(current_selected_folder,"SideBar");
+    //visualizeJSON(current_selected_folder,"SideBar");
+    //extend the ui for the display size
+    traverseObjectDepthFirst(current_selected_folder)
+}
+
+function traverseObjectDepthFirst(obj, depth = 0) {
+    for (let key in obj) {
+        let value = obj[key];
+        let type = typeof value;
+
+        //iterate the current nested object size 
+        Settings.SideBar.current_nested_object ++; 
+        // Check if the current item is a key or a value
+        let isKey = type === "object" &&!Array.isArray(value);
+        const container = document.getElementById("SideBar");
+        const current_key_name = key;
+        const val = document.createElement("div");
+        val.style.position = "absolute";
+        val.style.left = depth * 10;
+        val.style.top = Settings.SideBar.current_nested_object * Settings.SideBar.NestedFolderSize.y * 10;
+        val.className = "text";
+        val.style.color = "white";
+
+        if(isKey){
+            //it is a key     
+            val.innerHTML = current_key_name;    
+                        
+        }
+        else{
+            //is value
+            //val.innerHTML = value;
+            for(let pointer = 0; pointer < value.length; pointer ++){
+                const current_val = value[pointer];
+                const val2 = document.createElement("div");
+                val2.style.position  ="absolute";
+                val2.style.left = depth * 10;
+                val2.style.color = "white";
+                val2.style.width = "100%";
+                val2.className = "text";
+                val2.innerHTML = current_val;
+                val2.style.top = Settings.SideBar.current_nested_object * Settings.SideBar.NestedFolderSize.y;
+                val2.style.height = Settings.SideBar.NestedFolderSize.y; 
+                val2.style.zIndex = 999999;
+                val.appendChild(val2);
+            }
+
+
+
+        }
+        container.appendChild(val);
+        if (isKey) {
+            traverseObjectDepthFirst(value, depth + 1);
+        }
+    }
 }
 
 function visualizeJSON(jsonObj, containerId) {
@@ -128,5 +183,5 @@ function ShowRoot(FileIndex){
     }
 }
 function ApplyStyle(){
-    
+
 }
