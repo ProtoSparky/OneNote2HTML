@@ -1,0 +1,153 @@
+:root{
+    --topbarWidth:80px;
+    --col_normalTXT:#ecf0f1;
+    --col_bold_TXT:#bdc3c7; 
+    --col_highlight_TXT:#f39c12;
+    --col_link_TXT:#3498db; 
+    --col_icon:#bfc5c4; 
+    --col_btn:#009cda; 
+    --col_success:#00d573; 
+    --col_error:#ff2225; 
+    --col_bg_content:#1b1b1e; 
+    --col_bg_lighter:#2b2b31; 
+    --col_bg_div:#ebf1f0; 
+    --col_bg_div1:#89a6a1;
+    --CornerRad:4px; 
+    --ElementPadding:8px;    
+}
+/*
+body{
+    background-color:var(--col_bg_content);
+}
+*/
+table, td, th {
+    border: 1px solid var(--col_highlight_TXT);
+    border-collapse:collapse;
+    color:var(--col_normalTXT);
+    font-family:main_font;
+    padding:var(--ElementPadding);
+}
+
+@font-face {
+    font-family: main_font;
+    src: url(../fonts/Montserrat/Montserrat-VariableFont_wght.ttf);
+}
+.text{
+    font-family:main_font; 
+}
+#topbar{
+    position:absolute;
+    top:0px;
+    left:0px;
+    width:100%;
+    height:var(--topbarWidth);
+    background-color:var(--col_bg_lighter);
+
+}
+#content{
+    position:absolute;
+    top:var(--topbarWidth);
+    left:0px;
+    width:100%;
+    height:calc(100% - var(--topbarWidth));
+    background-color:var(--col_bg_content);
+}
+#content-fullScreen{
+    position:absolute;
+    top:0px;
+    left:0px;
+    width:100%;
+    height:100%;
+    background-color:var(--col_bg_content);
+}
+
+
+input {
+    background-color: var(--col_bg_lighter);
+    color: var(--col_normalTXT);
+    border: 1px solid var(--col_link_TXT);
+    border-radius: var(--CornerRad);
+    padding: var(--ElementPadding);
+    transition: border-color 0.3s ease-in-out;
+    font-family:main_font; 
+}
+
+input:hover {
+    border-color: var(--col_highlight_TXT);
+}
+
+input:focus {
+    border-color: var(--col_link_TXT);
+}
+  
+::placeholder {
+    color: var(--col_bold_TXT);
+}
+
+button {
+    background-color: var(--col_link_TXT);
+    color: var(--col_normalTXT);
+    border: none;
+    border-radius: var(--CornerRad);
+    padding: var(--ElementPadding);
+    transition: background-color 0.3s ease-in-out;
+    font-family:main_font; 
+}
+
+button:hover {
+    background-color: var(--col_highlight_TXT);    
+}
+
+#Fade2red{
+    background-color:var(--col_bg_content);
+    transition: background-color 0.3s ease-in-out;
+}
+#Fade2red:hover{
+    background-color:var(--col_error);
+}
+
+
+
+
+/*bar animation*/
+@keyframes BarMove{
+    0%{
+        right:-400px;
+    }
+    10%{
+        right:0px;
+    }
+    /*Do nothing ater this*/
+    90%{
+        right:0px;
+    }
+    100%{
+        right:-400px; 
+    }
+}
+
+select {
+    background-color: var(--col_bg_lighter);
+    color: var(--col_normalTXT);
+    border: 1px solid var(--col_link_TXT);
+    border-radius: var(--CornerRad);
+    padding: var(--ElementPadding);
+    transition: border-color 0.3s ease;
+    font-family:main_font; 
+}
+
+textarea {
+    background-color: var(--col_bg_lighter);
+    color: var(--col_normalTXT);
+    border: 1px solid var(--col_link_TXT);
+    border-radius: var(--CornerRad);
+    padding: var(--ElementPadding);
+    transition: border-color 0.3s ease;
+    font-family:main_font; 
+}
+
+
+
+
+
+
