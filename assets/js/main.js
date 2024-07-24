@@ -151,7 +151,7 @@ function OpenDir(dirname){
 
         //add base directory headers
         const header = document.createElement("div");
-        header.innerHTML = current_base_dir_name;
+        header.innerHTML = current_base_dir_name.slice(0, -1);
         header.style.position = "absolute";
         header.style.left = 0;
         header.style.top = Settings.OpenDir.dir_display.style.header_top;
@@ -166,11 +166,16 @@ function OpenDir(dirname){
         //clear temp directory top pointers
         Settings.temp_data[current_base_dir_name] = 0;
     }
-
     //increase size of sidebar
     body.style.height = Settings.temp_data.base_directory_pointer;
 
     //iterate over all files and append them to their respected places
+    console.log(total_dir_length);
+    for(let file_pointer = 0; file_pointer < total_dir_length; file_pointer ++){
+        const select_topdir = SelectData[file_pointer].I_dir[1];
+        console.log(select_topdir);
+
+    }
     
 
 }
