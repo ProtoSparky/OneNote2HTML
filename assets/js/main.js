@@ -16,7 +16,9 @@ var Settings = {
             "style":{
                 "box_height":150,
                 "header_top":0,
-                "header_height":20
+                "header_height":20,
+                "directory_height":10, //height of directory box within given directory div
+                "directory_space":20
             }
         },
         "dir_header":{
@@ -173,9 +175,48 @@ function OpenDir(dirname){
     console.log(total_dir_length);
     for(let file_pointer = 0; file_pointer < total_dir_length; file_pointer ++){
         const select_topdir = SelectData[file_pointer].I_dir[1];
+        Settings.temp_data[select_topdir] = 0;
+    }
+
+    for(let file_pointer = 0; file_pointer < total_dir_length; file_pointer ++){
+        const select_topdir = SelectData[file_pointer].I_dir[1];
+        const files_in_select_topdir = SelectData[file_pointer].files;
+        const file_length_in_select_topdir = files_in_select_topdir.length; 
+        if(Settings.temp_data[select_topdir] == undefined){
+            Settings.temp_data[select_topdir] = 0;
+        }        
+        // Settings.temp_data[select_topdir] is our counter for the total files in a given base directory
+        
+        //we iterate the top for our files
+        Settings.temp_data[select_topdir] = Settings.temp_data[select_topdir] + (Settings.OpenDir.dir_display.style.box_height + Settings.OpenDir.dir_display.style.directory_space);
+        const select_topdir_obj = document.getElementById(select_topdir);        
+        for(let directory_name_pointer = 0; directory_name_pointer < file_length_in_select_topdir; directory_name_pointer ++){
+            //construct file path
+            let FullFilePath = "./";
+            for(HalfFilePath in SelectData[file_pointer].dir){
+                FullFilePath = FullFilePath + HalfFilePath;
+            }
+            FullFilePath = FullFilePath + "/" + files_in_select_topdir[directory_name_pointer];
+
+
+            const fileDiv = document.createElement("div"); 
+            fileDiv.innerHTML = files_in_select_topdir[directory_name_pointer];
+            fileDiv.style.position = "absolute";
+            fileDiv.style.top = Settings.temp_data[select_topdir];
+            fileDiv.style.left = 0;
+            fileDiv.addEventListener("click",function(){
+                DisplayData(FullFilePath);
+            });
+            select_topdir_obj.appendChild(fileDiv);
+
+        }
+        
         console.log(select_topdir);
 
     }
     
 
+}
+function DisplayData(link){
+    console.log("opeming " + link); 
 }
