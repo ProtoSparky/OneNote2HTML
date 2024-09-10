@@ -11,24 +11,7 @@ var Settings = {
             "height":100
         }
     },
-    "OpenDir":{
-        "dir_display":{
-            "style":{
-                "box_height":150,
-                "header_top":0,
-                "header_height":20,
-                "directory_height":10, //height of directory box within given directory div
-                "directory_space":20
-            }
-        },
-        "dir_header":{
-            "style":{
-                "height":50
-            },
-            "header":"./"
-        }
-    },
-    "temp_data":{}//the data stored here will change and be mutable
+    "invert_color_toggle":false
 };
 var DirectoryData = null; 
 function init(){
@@ -42,6 +25,7 @@ function init(){
     Explorer.style.height = "100%";
     Explorer.style.width = Settings.Explorer.style.width;
     Explorer.style.backgroundColor = AccessCSSVar("--col_bg_lighter"); 
+    Explorer.style.overflowY = "scroll";
     Explorer.id = "Explorer"; 
     const Body = document.getElementById("content-fullscreen"); 
     Body.appendChild(Explorer); 
@@ -50,13 +34,14 @@ function init(){
     //we load the Directory listing
     DirectoryData = ReadJSON(Settings.Directory, false);
 
+    //prepare iframe
+    PrepareIframe();
     //we load the home screen
     Home(); 
 
 }
 
 function Home(){
-    //this function will display the choise data for the home directories (I know this is confusing)
     const home_keys = Object.keys(DirectoryData);
     const home_key_amounts = home_keys.length;
     const body = document.getElementById("Explorer");
@@ -79,144 +64,123 @@ function Home(){
 
     }
 }
-function OpenDir(dirname){
-    const body = document.getElementById("Explorer");
-    body.innerHTML = ""; //clear data here
-    console.info("Opening directory " + dirname); 
-    const SelectData = DirectoryData[dirname];
+function OpenDir(key){
+    const select_dir = DirectoryData[key]; 
 
-    //we count the directories at index 2. Increment a counter if they exist, or create another
-    let length_counter = {};
-    const total_dir_keys = Object.keys(SelectData);
-    const total_dir_length = total_dir_keys.length; 
-    console.log(total_dir_length);
-    for(let dir_pointer = 0; dir_pointer < total_dir_length; dir_pointer ++){
-        const select_dir = SelectData[dir_pointer];
-        const file_length = select_dir.files.length;
-        const select_2nd_key = select_dir.I_dir[1];
-        if(length_counter[select_2nd_key] == undefined){
-            length_counter[select_2nd_key] = 0;
-        }
-        length_counter[select_2nd_key] = length_counter[select_2nd_key] + file_length; 
-    }
-    console.info(length_counter); 
-
-    //we spawn the directory name in the dir index at the top
-
-    const dir_name = document.createElement("div");
-    dir_name.style.position = "absolute";
-    dir_name.style.top = 0;
-    dir_name.style.left = 0;
-    dir_name.style.width = "100%";
-    dir_name.style.height = Settings.OpenDir.dir_header.style.height; 
-    dir_name.id = "DirName";
-    dir_name.className = "text";
-    dir_name.style.color = AccessCSSVar("--col_bold_TXT");
-    dir_name.style.fontWeight = 800;
-    dir_name.style.textAlign = "center";
-    dir_name.style.cursor = "pointer";
-    dir_name.innerHTML = Settings.OpenDir.dir_header.header + dirname + "/";
-    dir_name.addEventListener("click", function(){
-        Home();
-    });
-    body.appendChild(dir_name);
+    //clear sidebar
+    const Explorer = document.getElementById("Explorer");
+    Explorer.innerHTML = ""; 
+    Explorer.style.display = "flex";
+    Explorer.style.flexDirection = "column";
 
 
-    //we add the frame all directories will stay in
-    const dir_frame = document.createElement("div");
-    dir_frame.id = "dir_frame";
-    dir_frame.style.position = "absolute";
-    dir_frame.style.top = Settings.OpenDir.dir_header.style.height;
-    dir_frame.style.height = "100%";
-    dir_frame.style.width = "100%";
-    body.appendChild(dir_frame); 
+    const top_index_keys = Object.keys(select_dir);
+    const top_index_keys_counted = top_index_keys.length;
+    for(let top_index_pointer = 0; top_index_pointer < top_index_keys_counted; top_index_pointer ++){
+        const select_top_index_name = top_index_keys[top_index_pointer];
+        const select_top_index_data = select_dir[select_top_index_name];
 
 
+        //spawn sub container
+        const sub_cont = document.createElement("div");
+        sub_cont.style.display = "flex";
+        sub_cont.style.flexDirection = "column"; 
+        sub_cont.id = select_top_index_name;
+        sub_cont.style.color = "white";
 
-    //we load in all base directories
-    const base_directory_array = Object.keys(length_counter);
-    const base_directory_count = base_directory_array.length; 
-    Settings.temp_data.base_directory_pointer = 0; //clear pointer before it is used
-    for(let base_directory_pointer = 0; base_directory_pointer < base_directory_count; base_directory_pointer++){
-        const current_base_dir_name = base_directory_array[base_directory_pointer]; 
-        const current_base_dir = length_counter[current_base_dir_name];
-        const base_directory_select = document.createElement("div")
-        base_directory_select.style.position  ="absolute";
-        base_directory_select.style.width = "100%";
-        base_directory_select.style.left = 0;
-        base_directory_select.id = current_base_dir_name;
-        base_directory_select.style.height = Settings.OpenDir.dir_display.style.box_height * current_base_dir;
+        const sub_cont_header = document.createElement("div");
+        sub_cont_header.innerHTML = select_top_index_name;
+        sub_cont_header.id = "sub_cont_header"; 
+        sub_cont_header.style.color = "white";
+        sub_cont.appendChild(sub_cont_header); 
 
-        base_directory_select.style.top = Settings.temp_data.base_directory_pointer; 
-        Settings.temp_data.base_directory_pointer = Settings.temp_data.base_directory_pointer + Settings.OpenDir.dir_display.style.box_height * current_base_dir;
-        dir_frame.appendChild(base_directory_select); 
 
-        //add base directory headers
-        const header = document.createElement("div");
-        header.innerHTML = current_base_dir_name.slice(0, -1);
-        header.style.position = "absolute";
-        header.style.left = 0;
-        header.style.top = Settings.OpenDir.dir_display.style.header_top;
-        header.style.height = Settings.OpenDir.dir_display.style.header_height;
-        header.style.width = "100%";
-        header.style.color = AccessCSSVar("--col_bold_TXT");
-        header.style.fontWeight = 900;
-        header.style.textAlign = "center";
-        header.style.className = "text";
-        base_directory_select.appendChild(header);
+        const sub_cont_indexes = select_top_index_data.index;
+        const sub_cont_indexes_len = sub_cont_indexes.length;
+        for(let sub_cont_index_pointer =0; sub_cont_index_pointer < sub_cont_indexes_len; sub_cont_index_pointer ++ ){
+            const current_sub_cont_index = sub_cont_indexes[sub_cont_index_pointer];
+            const current_sub_cont_data = select_top_index_data.sub[current_sub_cont_index]; //contains array
+            const u_sub_cont = document.createElement("div");
+            u_sub_cont.id = "u_sub_cont";
+            u_sub_cont.style.position = "relative";
+            u_sub_cont.style.left = "40px"; 
+            u_sub_cont.display = "flex";
+            u_sub_cont.flexDirection = "column";
+            sub_cont.appendChild(u_sub_cont);
 
-        //clear temp directory top pointers
-        Settings.temp_data[current_base_dir_name] = 0;
-    }
-    //increase size of sidebar
-    body.style.height = Settings.temp_data.base_directory_pointer;
+            const u_sub_cont_header = document.createElement("div");
+            u_sub_cont_header.id = "u_sub_cont_header";
+            u_sub_cont_header.innerHTML = current_sub_cont_index; 
+            u_sub_cont.appendChild(u_sub_cont_header);
 
-    //iterate over all files and append them to their respected places
-    console.log(total_dir_length);
-    for(let file_pointer = 0; file_pointer < total_dir_length; file_pointer ++){
-        const select_topdir = SelectData[file_pointer].I_dir[1];
-        Settings.temp_data[select_topdir] = 0;
-    }
-
-    for(let file_pointer = 0; file_pointer < total_dir_length; file_pointer ++){
-        const select_topdir = SelectData[file_pointer].I_dir[1];
-        const files_in_select_topdir = SelectData[file_pointer].files;
-        const file_length_in_select_topdir = files_in_select_topdir.length; 
-        if(Settings.temp_data[select_topdir] == undefined){
-            Settings.temp_data[select_topdir] = 0;
-        }        
-        // Settings.temp_data[select_topdir] is our counter for the total files in a given base directory
-        
-        //we iterate the top for our files
-        Settings.temp_data[select_topdir] = Settings.temp_data[select_topdir] + (Settings.OpenDir.dir_display.style.box_height + Settings.OpenDir.dir_display.style.directory_space);
-        const select_topdir_obj = document.getElementById(select_topdir);        
-        for(let directory_name_pointer = 0; directory_name_pointer < file_length_in_select_topdir; directory_name_pointer ++){
-            //construct file path
-            let FullFilePath = "./";
-            for(HalfFilePath in SelectData[file_pointer].dir){
-                FullFilePath = FullFilePath + HalfFilePath;
+            const current_sub_cont_data_length = current_sub_cont_data.length;
+            for(let current_ultra_sub_cont_pointer= 0;current_ultra_sub_cont_pointer < current_sub_cont_data_length; current_ultra_sub_cont_pointer ++ ){
+                const current_ultra_sub_cont = current_sub_cont_data[current_ultra_sub_cont_pointer];
+                const my_sub_cont = document.createElement("div");
+                my_sub_cont.id = "my_sub_cont";
+                my_sub_cont.style.position = "relative";
+                my_sub_cont.style.left = "40px"; 
+                my_sub_cont.style.fontWeight = "1000"; 
+                my_sub_cont.style.color = AccessCSSVar("--col_bold_TXT"); 
+                my_sub_cont.innerHTML = current_ultra_sub_cont.slice(0,-4);
+                my_sub_cont.style.cursor = "pointer"; 
+                my_sub_cont.addEventListener("click", function(){
+                    OpenFile("./exports/"+key + "/" + select_top_index_name + "/"+ current_sub_cont_index + "/" + current_ultra_sub_cont);
+                });
+                u_sub_cont.appendChild(my_sub_cont); 
             }
-            FullFilePath = FullFilePath + "/" + files_in_select_topdir[directory_name_pointer];
-
-
-            const fileDiv = document.createElement("div"); 
-            fileDiv.innerHTML = files_in_select_topdir[directory_name_pointer];
-            fileDiv.style.position = "absolute";
-            fileDiv.style.top = Settings.temp_data[select_topdir];
-            fileDiv.style.left = 0;
-            fileDiv.addEventListener("click",function(){
-                DisplayData(FullFilePath);
-            });
-            select_topdir_obj.appendChild(fileDiv);
-
         }
-        
-        console.log(select_topdir);
+
+
+        Explorer.appendChild(sub_cont);
 
     }
-    
+
 
 }
-function DisplayData(link){
-    console.log("opeming " + link); 
+
+function OpenFile(file_dir){
+    const iframe = document.getElementById("expolorer_viewer");
+    console.info("Opening file " + file_dir); 
+    iframe.src = file_dir; 
+    iframe.onload = function() {
+        // Change the text color to white after loading
+        let invert_col_btn = document.getElementById("invert_col");
+        if(invert_col_btn == undefined){
+            invert_col_btn = document.createElement("button");
+            invert_col_btn.innerHTML = "Invert text color";
+            invert_col_btn.style.position = "absolute";
+            invert_col_btn.style.zIndex = "9999";
+            invert_col_btn.style.right = "0px"; 
+            invert_col_btn.style.bottom = "0px";
+            invert_col_btn.addEventListener("click", function(){
+                invert_color();
+            });
+            document.getElementById("content-fullscreen").appendChild(invert_col_btn); 
+        }
+    };
+}
+
+function PrepareIframe(){
+    const content_fullscreen = document.getElementById("content-fullscreen");
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.left = Settings.Explorer.style.width;
+    iframe.style.width = window.innerWidth - Settings.Explorer.style.width;
+    iframe.style.borderStyle = "none"; 
+    iframe.style.height = "100%";
+    iframe.id = "expolorer_viewer";
+    content_fullscreen.appendChild(iframe);
+
+}
+function invert_color(){
+    const iframe = document.getElementById("expolorer_viewer");
+    if(Settings.invert_color_toggle){
+        Settings.invert_color_toggle = false; 
+        iframe.contentWindow.document.body.style.color = 'white';
+    }
+    else{
+        Settings.invert_color_toggle = true;
+        iframe.contentWindow.document.body.style.color = 'black';
+    }
 }
