@@ -158,6 +158,8 @@ function OpenFile(file_dir){
             });
             document.getElementById("content-fullscreen").appendChild(invert_col_btn); 
         }
+        invert_color();
+        invert_color(); 
     };
 }
 
