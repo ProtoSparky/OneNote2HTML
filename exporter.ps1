@@ -1,18 +1,23 @@
-# https://stackoverflow.com/questions/53689087/powershell-and-onenote
-# http://thebackend.info/powershell/2017/12/onenote-read-and-write-content-with-powershell/
-# https://stackoverflow.com/questions/53639041/how-to-access-contents-of-onenote-page
-
 # Get export folder
 Function Get-Folder($initialDirectory) {
-	[System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms")|Out-Null
-	$foldername = New-Object System.Windows.Forms.FolderBrowserDialog
-	$foldername.Description = "Select an export folder"
-	$foldername.rootfolder = "MyComputer"
-	if($foldername.ShowDialog() -eq "OK")
-	{
-		$folder += $foldername.SelectedPath
-	}
-	return $folder
+    [System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null
+    $foldername = New-Object System.Windows.Forms.FolderBrowserDialog
+    $foldername.Description = "Select 'exports' in the project directory"
+    
+    # Set the root folder to the 'exports' subdirectory of the current script's directory
+    $exportsPath = Join-Path -Path $PSScriptRoot -ChildPath "exports"
+    
+    # Check if the 'exports' directory exists, if not, use the script's directory
+    if (Test-Path $exportsPath) {
+        $foldername.SelectedPath = $exportsPath
+    } else {
+        $foldername.SelectedPath = $PSScriptRoot
+    }
+    
+    if ($foldername.ShowDialog() -eq "OK") {
+        $folder = $foldername.SelectedPath
+    }
+    return $folder
 }
 
 # Spider and find each page, create directory for each group
@@ -48,7 +53,7 @@ Function Export-OneNote-Page {
 Function Export-OneNote-Attachments {
 	param ( $onenote, $node, $path )
 	$xml = ''
-	$schema = @{one=”http://schemas.microsoft.com/office/onenote/2013/onenote”}
+	$schema = @{one=ï¿½http://schemas.microsoft.com/office/onenote/2013/onenoteï¿½}
 	$onenote.GetPageContent($node.ID, [ref]$xml)
 	$xml | Select-Xml -XPath "//one:Page/one:Outline/one:OEChildren/one:OE/one:InsertedFile" -Namespace $schema | foreach {
 		$file = Join-Path -Path $path -ChildPath $_.Node.preferredName
